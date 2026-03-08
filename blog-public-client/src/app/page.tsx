@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { fetchPosts, fetchCategories } from '@/lib/api';
 import { PostCard } from '@/components/PostCard';
 import { Pagination } from '@/components/Pagination';
