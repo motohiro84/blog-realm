@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.admin.mapper.DashboardMapper">
+
+  <select id="findUserDraftsByStatus" resultType="BlogPostDraft">
+    SELECT d.draft_id, d.title, d.updated_at,
+      (SELECT bi.image_url FROM blog_image_drafts bi
+       WHERE bi.draft_id = d.draft_id AND bi.is_thumbnail = true
+       AND bi.is_deleted = false LIMIT 1) AS thumbnail_url
+    FROM blog_post_drafts d
+    WHERE d.author_id = #{authorId} AND d.status = #{status} AND d.is_deleted = false
+    ORDER BY d.updated_at DESC LIMIT #{limit}
+  </select>
+
+  <select id="findAwaitingApproval" resultType="BlogPostDraft">
+    SELECT d.draft_id, d.title, d.updated_at, u.display_name AS author_name,
+      (SELECT bi.image_url FROM blog_image_drafts bi
+       WHERE bi.draft_id = d.draft_id AND bi.is_thumbnail = true
+       AND bi.is_deleted = false LIMIT 1) AS thumbnail_url
+    FROM blog_post_drafts d
+    JOIN users u ON d.author_id = u.user_id
+    WHERE d.status = 'PENDING' AND d.is_deleted = false
+    ORDER BY d.updated_at DESC LIMIT #{limit}
+  </select>
+</mapper>

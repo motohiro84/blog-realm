@@ -1,0 +1,52 @@
+server:
+  port: ${SPRING_BOOT_PORT:4000}
+
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  datasource:
+    url: jdbc:postgresql://${SPRING_DB_HOST:localhost}:${SPRING_DB_PORT:5432}/${SPRING_DB_NAME:blog}
+    username: ${SPRING_DB_USER:admin}
+    password: ${SPRING_DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8081/realms/blog-realm}
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8081/realms/blog-realm/protocol/openid-connect/certs}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 200MB
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+  type-aliases-package: com.blog.admin.model
+
+keycloak:
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8081}
+  realm: ${KEYCLOAK_REALM:blog-realm}
+  client-id: ${KEYCLOAK_CLIENT_ID:blog-admin}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+  token-url: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/token
+  logout-url: ${keycloak.auth-server-url}/realms/${keycloak.realm}/protocol/openid-connect/logout
+
+seaweedfs:
+  endpoint: ${SEAWEEDFS_ENDPOINT:http://localhost:8333}
+  access-key: ${SEAWEEDFS_ACCESS_KEY:blog_admin}
+  secret-key: ${SEAWEEDFS_SECRET_KEY:blog_admin_secret}
+  bucket: ${SEAWEEDFS_BUCKET:blog-images}
+  public-url: ${SEAWEEDFS_PUBLIC_URL:http://localhost:8333}
+
+app:
+  public-api-url: ${PUBLIC_API_URL:http://localhost:4001}
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:3000}

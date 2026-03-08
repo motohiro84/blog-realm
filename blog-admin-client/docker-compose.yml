@@ -1,0 +1,12 @@
+services:
+  blog-admin-client:
+    build: .
+    container_name: blog-admin-client
+    ports:
+      - "3000:80"
+    networks:
+      - blog-realm-network
+
+networks:
+  blog-realm-network:
+    external: true

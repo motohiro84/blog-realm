@@ -1,0 +1,29 @@
+services:
+  keycloak-mysql:
+    image: mysql:8.0
+    container_name: keycloak-mysql
+    ports:
+      - "${KEYCLOAK_MYSQL_PORT}:3306"
+    environment:
+      MYSQL_DATABASE: ${KEYCLOAK_MYSQL_DATABASE}
+      MYSQL_USER: ${KEYCLOAK_MYSQL_USER}
+      MYSQL_PASSWORD: ${KEYCLOAK_MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${KEYCLOAK_MYSQL_ROOT_PASSWORD}
+    volumes:
+      - keycloak_mysql_data:/var/lib/mysql
+    networks:
+      - blog-realm-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 5
+      interval: 10s
+    env_file:
+      - .env.local
+
+volumes:
+  keycloak_mysql_data:
+
+networks:
+  blog-realm-network:
+    external: true

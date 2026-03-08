@@ -1,0 +1,28 @@
+services:
+  blog-postgres:
+    image: postgres:15
+    container_name: blog-postgres
+    ports:
+      - "${BLOG_POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_DB: ${BLOG_POSTGRES_DATABASE}
+      POSTGRES_USER: ${BLOG_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${BLOG_POSTGRES_PASSWORD}
+    volumes:
+      - blog_postgres_data:/var/lib/postgresql/data
+    networks:
+      - blog-realm-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${BLOG_POSTGRES_USER}"]
+      timeout: 5s
+      retries: 5
+      interval: 10s
+    env_file:
+      - .env.local
+
+volumes:
+  blog_postgres_data:
+
+networks:
+  blog-realm-network:
+    external: true

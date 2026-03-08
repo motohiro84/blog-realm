@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.admin.mapper.UserMapper">
+
+  <select id="findByKeycloakId" resultType="User">
+    SELECT * FROM users WHERE keycloak_id = #{keycloakId}::uuid AND is_deleted = false
+  </select>
+
+  <select id="findById" resultType="User">
+    SELECT * FROM users WHERE user_id = #{userId} AND is_deleted = false
+  </select>
+
+  <select id="findByIdWithPostCount" resultType="User">
+    SELECT u.*, COUNT(d.draft_id) AS post_count
+    FROM users u
+    LEFT JOIN blog_post_drafts d ON u.user_id = d.author_id AND d.is_deleted = false
+    WHERE u.user_id = #{userId} AND u.is_deleted = false
+    GROUP BY u.user_id
+  </select>
+
+  <select id="findAll" resultType="User">
+    SELECT u.*, COUNT(d.draft_id) AS post_count
+    FROM users u
+    LEFT JOIN blog_post_drafts d ON u.user_id = d.author_id AND d.is_deleted = false
+    WHERE u.is_deleted = false
+    <if test="role != null">AND u.role = #{role}</if>
+    <if test="search != null">
+      AND (u.first_name LIKE CONCAT('%', #{search}, '%')
+           OR u.last_name LIKE CONCAT('%', #{search}, '%')
+           OR u.display_name LIKE CONCAT('%', #{search}, '%'))
+    </if>
+    GROUP BY u.user_id
+    ORDER BY u.created_at DESC
+    LIMIT #{limit} OFFSET #{offset}
+  </select>
+
+  <select id="countAll" resultType="int">
+    SELECT COUNT(*) FROM users WHERE is_deleted = false
+    <if test="role != null">AND role = #{role}</if>
+    <if test="search != null">
+      AND (first_name LIKE CONCAT('%', #{search}, '%')
+           OR last_name LIKE CONCAT('%', #{search}, '%')
+           OR display_name LIKE CONCAT('%', #{search}, '%'))
+    </if>
+  </select>
+
+  <update id="updateProfile">
+    UPDATE users SET
+      <if test="displayName != null">display_name = #{displayName},</if>
+      <if test="profileImageUrl != null">profile_image_url = #{profileImageUrl},</if>
+      <if test="bio != null">bio = #{bio},</if>
+      <if test="isPublic != null">is_public = #{isPublic},</if>
+      updated_at = CURRENT_TIMESTAMP
+    WHERE user_id = #{userId} AND is_deleted = false
+  </update>
+</mapper>

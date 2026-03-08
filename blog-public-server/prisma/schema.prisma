@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ユーザーテーブル
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+model User {
+  userId          Int       @id @default(autoincrement()) @map("user_id")
+  keycloakId      String    @unique @map("keycloak_id") @db.Uuid
+  username        String    @unique @db.VarChar(50)
+  email           String    @unique @db.VarChar(100)
+  firstName       String    @map("first_name") @db.VarChar(50)
+  lastName        String    @map("last_name") @db.VarChar(50)
+  role            String    @db.VarChar(20) // 'USER' or 'ADMIN'
+  displayName     String?   @map("display_name") @db.VarChar(100)
+  profileImageUrl String?   @map("profile_image_url") @db.VarChar(500)
+  bio             String?   @db.Text
+  isPublic        Boolean   @default(true) @map("is_public")
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamp(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  draftPosts        BlogPostDraft[]      @relation("DraftAuthor")
+  approvedDrafts    BlogPostDraft[]      @relation("DraftApprover")
+  rejectedDrafts    BlogPostDraft[]      @relation("DraftRejecter")
+  publishedPosts    BlogPostPublished[]  @relation("PublishedAuthor")
+  publishedApprover BlogPostPublished[]  @relation("PublishedApprover")
+
+  @@map("users")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 下書き記事テーブル
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+model BlogPostDraft {
+  draftId         Int       @id @default(autoincrement()) @map("draft_id")
+  authorId        Int       @map("author_id")
+  author          User      @relation("DraftAuthor", fields: [authorId], references: [userId])
+  title           String    @db.VarChar(200)
+  content         String    @db.Text
+  category        String    @db.VarChar(20) // TECH, DIARY, REVIEW
+  status          String    @db.VarChar(20) // DRAFT, PENDING, APPROVED, REJECTED
+  publishedPostId Int?      @map("published_post_id")
+  publishedPost   BlogPostPublished? @relation("DraftToPublished", fields: [publishedPostId], references: [postId])
+  submittedAt     DateTime? @map("submitted_at") @db.Timestamp(6)
+  approvedAt      DateTime? @map("approved_at") @db.Timestamp(6)
+  approvedById    Int?      @map("approved_by")
+  approvedBy      User?     @relation("DraftApprover", fields: [approvedById], references: [userId])
+  rejectedAt      DateTime? @map("rejected_at") @db.Timestamp(6)
+  rejectedById    Int?      @map("rejected_by")
+  rejectedBy      User?     @relation("DraftRejecter", fields: [rejectedById], references: [userId])
+  rejectionReason String?   @map("rejection_reason") @db.Text
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamp(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  images          BlogImageDraft[]
+
+  @@map("blog_post_drafts")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 公開記事テーブル
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+model BlogPostPublished {
+  postId          Int       @id @default(autoincrement()) @map("post_id")
+  authorId        Int       @map("author_id")
+  author          User      @relation("PublishedAuthor", fields: [authorId], references: [userId])
+  title           String    @db.VarChar(200)
+  slug            String    @unique @db.VarChar(250) // URL用スラッグ
+  content         String    @db.Text
+  category        String    @db.VarChar(20)
+  isPublic        Boolean   @default(true) @map("is_public")
+  approvedAt      DateTime  @map("approved_at") @db.Timestamp(6)
+  approvedById    Int       @map("approved_by")
+  approvedBy      User      @relation("PublishedApprover", fields: [approvedById], references: [userId])
+  publishedAt     DateTime  @default(now()) @map("published_at") @db.Timestamp(6)
+  lastUpdatedAt   DateTime  @map("last_updated_at") @db.Timestamp(6)
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamp(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  drafts          BlogPostDraft[]    @relation("DraftToPublished")
+  images          BlogImagePublished[]
+  histories       BlogPostHistory[]
+
+  @@map("blog_post_published")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 公開記事履歴テーブル
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+model BlogPostHistory {
+  historyId       Int       @id @default(autoincrement()) @map("history_id")
+  postId          Int       @map("post_id")
+  post            BlogPostPublished @relation(fields: [postId], references: [postId])
+  version         Int
+  title           String    @db.VarChar(200)
+  content         String    @db.Text
+  category        String    @db.VarChar(20)
+  thumbnailUrl    String?   @map("thumbnail_url") @db.VarChar(500)
+  approvedAt      DateTime  @map("approved_at") @db.Timestamp(6)
+  approvedById    Int       @map("approved_by")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("blog_post_histories")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 下書き画像テーブル
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+model BlogImageDraft {
+  imageId         Int       @id @default(autoincrement()) @map("image_id")
+  draftId         Int       @map("draft_id")
+  draft           BlogPostDraft @relation(fields: [draftId], references: [draftId])
+  imageUrl        String    @map("image_url") @db.VarChar(500)
+  isThumbnail     Boolean   @default(false) @map("is_thumbnail")
+  displayOrder    Int       @default(0) @map("display_order")
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("blog_image_drafts")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 公開画像テーブル
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+model BlogImagePublished {
+  imageId         Int       @id @default(autoincrement()) @map("image_id")
+  postId          Int       @map("post_id")
+  post            BlogPostPublished @relation(fields: [postId], references: [postId])
+  imageUrl        String    @map("image_url") @db.VarChar(500)
+  isThumbnail     Boolean   @default(false) @map("is_thumbnail")
+  displayOrder    Int       @default(0) @map("display_order")
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("blog_image_published")
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// マスタテーブル
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+model Master {
+  masterId        Int       @id @default(autoincrement()) @map("master_id")
+  category        String    @db.VarChar(50)
+  code            String    @db.VarChar(50)
+  displayName     String    @map("display_name") @db.VarChar(100)
+  displayOrder    Int       @map("display_order")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@unique([category, code])
+  @@map("masters")
+}

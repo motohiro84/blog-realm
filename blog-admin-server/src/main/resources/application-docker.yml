@@ -1,0 +1,31 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Docker環境用設定
+# docker-compose.ymlのenvironmentで注入された環境変数を参照する
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${SPRING_DB_HOST}:${SPRING_DB_PORT}/${SPRING_DB_NAME}
+    username: ${SPRING_DB_USER}
+    password: ${SPRING_DB_PASSWORD}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          jwk-set-uri: ${KEYCLOAK_JWK_URI}
+
+keycloak:
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET}
+
+seaweedfs:
+  endpoint: ${SEAWEEDFS_ENDPOINT}
+  access-key: ${SEAWEEDFS_ACCESS_KEY}
+  secret-key: ${SEAWEEDFS_SECRET_KEY}
+  public-url: ${SEAWEEDFS_PUBLIC_URL}
+
+app:
+  public-api-url: ${PUBLIC_API_URL}
+  cors:
+    allowed-origins: ${CORS_ORIGINS}

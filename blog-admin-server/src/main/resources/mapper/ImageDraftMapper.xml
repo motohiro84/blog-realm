@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.admin.mapper.ImageDraftMapper">
+
+  <select id="findByDraftId" resultType="BlogImageDraft">
+    SELECT * FROM blog_image_drafts
+    WHERE draft_id = #{draftId} AND is_deleted = false
+    ORDER BY display_order
+  </select>
+
+  <insert id="insertBatch">
+    INSERT INTO blog_image_drafts (draft_id, image_url, is_thumbnail, display_order, created_at)
+    VALUES
+    <foreach collection="images" item="img" separator=",">
+      (#{img.draftId}, #{img.imageUrl}, #{img.isThumbnail}, #{img.displayOrder}, CURRENT_TIMESTAMP)
+    </foreach>
+  </insert>
+
+  <update id="softDeleteByDraftId">
+    UPDATE blog_image_drafts SET is_deleted = true WHERE draft_id = #{draftId}
+  </update>
+</mapper>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blog.admin.mapper.MasterMapper">
+
+  <select id="findByCategory" resultType="Master">
+    SELECT * FROM masters WHERE category = #{category} ORDER BY display_order
+  </select>
+
+  <select id="existsCategory" resultType="boolean">
+    SELECT EXISTS(SELECT 1 FROM masters WHERE category = #{category})
+  </select>
+</mapper>

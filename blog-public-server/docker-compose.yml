@@ -1,0 +1,14 @@
+services:
+  blog-public-server:
+    build: .
+    container_name: blog-public-server
+    ports:
+      - "4001:4001"
+    env_file:
+      - .env
+    networks:
+      - blog-realm-network
+
+networks:
+  blog-realm-network:
+    external: true

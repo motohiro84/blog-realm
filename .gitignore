@@ -1,0 +1,30 @@
+# 環境変数ファイル
+**/.env
+**/.env.local
+
+# Docker関連
+**/docker-compose.override.yml
+
+# Node.js関連
+**/node_modules/
+**/package-lock.json
+**/.next/
+**/dist/
+
+# Java関連
+**/.gradle/
+**/build/
+**/*.class
+**/*.jar
+
+# IDE関連
+.idea/
+.vscode/
+*.iml
+
+# OS関連
+.DS_Store
+Thumbs.db
+
+# Spring Boot ローカル設定（シークレットを含むため）
+**/application-local.yml
