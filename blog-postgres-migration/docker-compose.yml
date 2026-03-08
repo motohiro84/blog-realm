@@ -17,8 +17,6 @@ services:
       timeout: 5s
       retries: 5
       interval: 10s
-    env_file:
-      - .env.local
 
 volumes:
   blog_postgres_data:

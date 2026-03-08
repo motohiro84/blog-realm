@@ -17,8 +17,6 @@ services:
     command: start-dev
     networks:
       - blog-realm-network
-    env_file:
-      - .env.local
 
 networks:
   blog-realm-network:
