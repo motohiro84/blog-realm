@@ -9,7 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
       <h1 class="logo">ブログ管理システム</h1>
       <div class="user-info">
         <span>{{ authService.user()?.profile?.displayName || authService.user()?.username }}</span>
-        <button (click)="authService.logout()" class="btn-logout">ログアウト</button>
+        <button (click)="logout()" class="btn-logout">ログアウト</button>
       </div>
     </header>
   `,
@@ -25,4 +25,8 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class HeaderComponent {
   constructor(public authService: AuthService) {}
+
+  logout() {
+    this.authService.logout().subscribe();
+  }
 }

@@ -48,20 +48,22 @@ export class LoginComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  async login() {
+  login() {
     if (!this.username || !this.password) {
       this.errorMessage.set('ユーザー名とパスワードを入力してください');
       return;
     }
     this.loading.set(true);
     this.errorMessage.set('');
-    try {
-      await this.authService.login(this.username, this.password);
-      this.router.navigate(['/dashboard']);
-    } catch (e: any) {
-      this.errorMessage.set('ユーザー名またはパスワードが正しくありません');
-    } finally {
-      this.loading.set(false);
-    }
+    this.authService.login(this.username, this.password).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/dashboard']);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.errorMessage.set('ユーザー名またはパスワードが正しくありません');
+      },
+    });
   }
 }
