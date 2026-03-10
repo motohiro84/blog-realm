@@ -4,9 +4,6 @@ services:
     container_name: blog-public-client
     ports:
       - "3001:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://blog-public-server:4001
-      - NEXT_PUBLIC_SEAWEEDFS_URL=http://localhost:8333
     networks:
       - blog-realm-network
 

@@ -1,8 +1,5 @@
-build/classes
-build/generated
-build/tmp
-build/reports
 .gradle
+build
 .env
 .env.local
 *.md
