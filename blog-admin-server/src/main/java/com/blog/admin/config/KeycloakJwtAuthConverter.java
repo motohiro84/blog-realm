@@ -12,6 +12,12 @@ import java.util.stream.Collectors;
 
 public class KeycloakJwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
+    private final String clientId;
+
+    public KeycloakJwtAuthConverter(String clientId) {
+        this.clientId = clientId;
+    }
+
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
         Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
@@ -25,8 +31,16 @@ public class KeycloakJwtAuthConverter implements Converter<Jwt, AbstractAuthenti
         // realm_access.roles から取得
         Map<String, Object> realmAccess = jwt.getClaimAsMap("realm_access");
         if (realmAccess != null && realmAccess.containsKey("roles")) {
-            List<String> realmRoles = (List<String>) realmAccess.get("roles");
-            roles.addAll(realmRoles);
+            roles.addAll((List<String>) realmAccess.get("roles"));
+        }
+
+        // resource_access.<clientId>.roles から取得
+        Map<String, Object> resourceAccess = jwt.getClaimAsMap("resource_access");
+        if (resourceAccess != null && resourceAccess.containsKey(clientId)) {
+            Map<String, Object> clientAccess = (Map<String, Object>) resourceAccess.get(clientId);
+            if (clientAccess != null && clientAccess.containsKey("roles")) {
+                roles.addAll((List<String>) clientAccess.get("roles"));
+            }
         }
 
         return roles.stream()

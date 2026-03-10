@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt.jwtAuthenticationConverter(new KeycloakJwtAuthConverter()))
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(new KeycloakJwtAuthConverter("blog-admin")))
             );
         return http.build();
     }

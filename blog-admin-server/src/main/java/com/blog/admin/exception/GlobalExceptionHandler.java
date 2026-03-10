@@ -1,6 +1,7 @@
 package com.blog.admin.exception;
 
 import com.blog.admin.dto.common.ErrorResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -29,6 +31,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception e) {
+        log.error("Unhandled exception", e);
         ErrorResponse response = new ErrorResponse("INTERNAL_ERROR", "内部エラーが発生しました", null);
         return ResponseEntity.internalServerError().body(response);
     }

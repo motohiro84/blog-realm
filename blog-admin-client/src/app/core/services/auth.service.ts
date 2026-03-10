@@ -24,24 +24,55 @@ interface UserInfo {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private currentUser = signal<UserInfo | null>(null);
   private accessToken = signal<string | null>(localStorage.getItem('accessToken'));
 
+  // JWT ペイロードを同期的にパース
+  private tokenPayload = computed<Record<string, any> | null>(() => {
+    const token = this.accessToken();
+    if (!token) return null;
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      return null;
+    }
+  });
+
+  // 認証状態は JWT から同期的に判断（API 不要）
+  isLoggedIn = computed(() => {
+    const payload = this.tokenPayload();
+    if (!payload) return false;
+    return Date.now() < payload['exp'] * 1000;
+  });
+
+  isAdmin = computed(() => {
+    const payload = this.tokenPayload();
+    if (!payload) return false;
+    const roles: string[] = payload['resource_access']?.['blog-admin']?.roles ?? [];
+    return roles.includes('admin');
+  });
+
+  // プロフィール表示用（userId, displayName, avatarUrl 等）は API から取得
+  private currentUser = signal<UserInfo | null>(null);
   user = this.currentUser.asReadonly();
-  isLoggedIn = computed(() => !!this.accessToken());
-  isAdmin = computed(() => this.currentUser()?.roles.includes('admin') ?? false);
 
   isRefreshing = false;
   refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
   constructor(private http: HttpClient, private router: Router) {
-    if (this.accessToken()) {
+    if (this.isLoggedIn()) {
       this.loadCurrentUser().pipe(catchError(() => of(void 0))).subscribe();
     }
   }
 
   getToken(): string | null {
     return this.accessToken();
+  }
+
+  clearAuth(): void {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    this.accessToken.set(null);
+    this.currentUser.set(null);
   }
 
   login(username: string, password: string): Observable<void> {
@@ -60,10 +91,7 @@ export class AuthService {
     return this.http.post<void>(`${environment.apiUrl}/auth/logout`, { refreshToken }).pipe(
       catchError(() => of(void 0)),
       tap(() => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        this.accessToken.set(null);
-        this.currentUser.set(null);
+        this.clearAuth();
         this.router.navigate(['/login']);
       })
     );
