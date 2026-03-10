@@ -1,0 +1,35 @@
+service: blog-batch-server
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: ap-northeast-1
+  timeout: 300
+  environment:
+    DATABASE_URL: ${env:DATABASE_URL}
+    ELASTICSEARCH_NODE: ${env:ELASTICSEARCH_NODE}
+    KEYCLOAK_URL: ${env:KEYCLOAK_URL}
+    KEYCLOAK_REALM: ${env:KEYCLOAK_REALM}
+    KEYCLOAK_ADMIN_USERNAME: ${env:KEYCLOAK_ADMIN_USERNAME}
+    KEYCLOAK_ADMIN_PASSWORD: ${env:KEYCLOAK_ADMIN_PASSWORD}
+
+functions:
+  esReindex:
+    handler: dist/es-reindex/index.handler
+    events:
+      # 毎日 00:00 JST (= 15:00 UTC 前日)
+      - schedule: cron(0 15 * * ? *)
+      # 毎日 12:00 JST (= 03:00 UTC)
+      - schedule: cron(0 3 * * ? *)
+
+  userSync:
+    handler: dist/user-sync/index.handler
+    events:
+      # 毎日 00:00 JST (= 15:00 UTC 前日)
+      - schedule: cron(0 15 * * ? *)
+      # 毎日 12:00 JST (= 03:00 UTC)
+      - schedule: cron(0 3 * * ? *)
+
+plugins:
+  - serverless-offline

@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId          Int       @id @default(autoincrement()) @map("user_id")
+  keycloakId      String    @unique @map("keycloak_id") @db.Uuid
+  username        String    @unique @db.VarChar(50)
+  email           String    @unique @db.VarChar(100)
+  firstName       String    @map("first_name") @db.VarChar(50)
+  lastName        String    @map("last_name") @db.VarChar(50)
+  role            String    @db.VarChar(20)
+  displayName     String?   @map("display_name") @db.VarChar(100)
+  profileImageUrl String?   @map("profile_image_url") @db.VarChar(500)
+  bio             String?   @db.Text
+  isPublic        Boolean   @default(true) @map("is_public")
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamp(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  publishedPosts    BlogPostPublished[] @relation("PublishedAuthor")
+  publishedApprover BlogPostPublished[] @relation("PublishedApprover")
+
+  @@map("users")
+}
+
+model BlogPostPublished {
+  postId        Int       @id @default(autoincrement()) @map("post_id")
+  authorId      Int       @map("author_id")
+  author        User      @relation("PublishedAuthor", fields: [authorId], references: [userId])
+  title         String    @db.VarChar(200)
+  slug          String    @unique @db.VarChar(250)
+  content       String    @db.Text
+  category      String    @db.VarChar(20)
+  isPublic      Boolean   @default(true) @map("is_public")
+  approvedAt    DateTime  @map("approved_at") @db.Timestamp(6)
+  approvedById  Int       @map("approved_by")
+  approvedBy    User      @relation("PublishedApprover", fields: [approvedById], references: [userId])
+  publishedAt   DateTime  @default(now()) @map("published_at") @db.Timestamp(6)
+  lastUpdatedAt DateTime  @map("last_updated_at") @db.Timestamp(6)
+  isDeleted     Boolean   @default(false) @map("is_deleted")
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamp(6)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  images BlogImagePublished[]
+
+  @@map("blog_post_published")
+}
+
+model BlogImagePublished {
+  imageId      Int               @id @default(autoincrement()) @map("image_id")
+  postId       Int               @map("post_id")
+  post         BlogPostPublished @relation(fields: [postId], references: [postId])
+  imageUrl     String            @map("image_url") @db.VarChar(500)
+  isThumbnail  Boolean           @default(false) @map("is_thumbnail")
+  displayOrder Int               @default(0) @map("display_order")
+  isDeleted    Boolean           @default(false) @map("is_deleted")
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@map("blog_image_published")
+}
+
+// バッチの最終同期時刻を管理するテーブル
+model BatchSyncLog {
+  id         Int      @id @default(autoincrement())
+  batchName  String   @unique @map("batch_name") @db.VarChar(100)
+  lastSyncAt DateTime @map("last_sync_at") @db.Timestamp(6)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("batch_sync_log")
+}

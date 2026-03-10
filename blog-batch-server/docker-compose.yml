@@ -1,0 +1,12 @@
+services:
+  blog-batch-server:
+    build: .
+    container_name: blog-batch-server
+    env_file:
+      - .env
+    networks:
+      - blog-realm-network
+
+networks:
+  blog-realm-network:
+    external: true
