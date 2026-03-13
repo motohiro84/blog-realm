@@ -1,0 +1,205 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AuthorBrief {
+  authorId: Int!
+  avatarUrl: String
+  displayName: String
+}
+
+type AuthorCategoryCount {
+  code: String!
+  name: String!
+  postCount: Int!
+}
+
+type AuthorLatestPost {
+  category: String!
+  categoryName: String!
+  postId: Int!
+  publishedAt: DateTime
+  slug: String!
+  thumbnailUrl: String
+  title: String!
+}
+
+type AuthorPostSummary {
+  category: String!
+  categoryName: String!
+  excerpt: String!
+  lastUpdatedAt: DateTime
+  postId: Int!
+  publishedAt: DateTime
+  slug: String!
+  thumbnailUrl: String
+  title: String!
+}
+
+type AuthorPostsResult {
+  author: AuthorBrief!
+  pagination: PaginationInfo!
+  posts: [AuthorPostSummary!]!
+}
+
+type AuthorProfile {
+  authorId: Int!
+  avatarUrl: String
+  bio: String
+  categories: [AuthorCategoryCount!]!
+  displayName: String
+  latestPosts: [AuthorLatestPost!]!
+  postCount: Int!
+}
+
+type CategoriesResult {
+  categories: [CategoryInfo!]!
+}
+
+type CategoryBrief {
+  code: String!
+  name: String!
+}
+
+type CategoryInfo {
+  code: String!
+  displayOrder: Int!
+  name: String!
+  postCount: Int!
+}
+
+type CategoryPostAuthor {
+  authorId: Int!
+  avatarUrl: String
+  displayName: String
+}
+
+type CategoryPostSummary {
+  author: CategoryPostAuthor!
+  category: String!
+  categoryName: String!
+  excerpt: String!
+  lastUpdatedAt: DateTime
+  postId: Int!
+  publishedAt: DateTime
+  slug: String!
+  thumbnailUrl: String
+  title: String!
+}
+
+type CategoryPostsResult {
+  category: CategoryBrief!
+  pagination: PaginationInfo!
+  posts: [CategoryPostSummary!]!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type PaginationInfo {
+  currentPage: Int!
+  itemsPerPage: Int!
+  totalItems: Int!
+}
+
+type PostAuthor {
+  authorId: Int!
+  avatarUrl: String
+  displayName: String
+}
+
+type PostAuthorDetail {
+  authorId: Int!
+  avatarUrl: String
+  bio: String
+  displayName: String
+}
+
+type PostDetail {
+  author: PostAuthorDetail!
+  category: String!
+  categoryName: String!
+  content: String!
+  images: [PostImage!]!
+  lastUpdatedAt: DateTime
+  postId: Int!
+  publishedAt: DateTime
+  relatedPosts: [RelatedPost!]!
+  slug: String!
+  thumbnailUrl: String
+  title: String!
+}
+
+type PostImage {
+  displayOrder: Int!
+  imageUrl: String!
+  isThumbnail: Boolean!
+}
+
+type PostListResult {
+  pagination: PaginationInfo!
+  posts: [PostSummary!]!
+}
+
+type PostSummary {
+  author: PostAuthor!
+  category: String!
+  categoryName: String!
+  excerpt: String!
+  lastUpdatedAt: DateTime
+  postId: Int!
+  publishedAt: DateTime
+  slug: String!
+  thumbnailUrl: String
+  title: String!
+}
+
+type Query {
+  author(authorId: Int!): AuthorProfile
+  authorPosts(authorId: Int!, category: String, limit: Int, page: Int): AuthorPostsResult
+  categories: CategoriesResult!
+  categoryPosts(code: String!, limit: Int, page: Int): CategoryPostsResult
+  post(slug: String!): PostDetail
+  posts(category: String, limit: Int, order: String, page: Int, sortBy: String): PostListResult!
+  search(category: String, limit: Int, page: Int, q: String!): SearchResult!
+}
+
+type RelatedPost {
+  postId: Int!
+  publishedAt: DateTime
+  slug: String!
+  thumbnailUrl: String
+  title: String!
+}
+
+type SearchAuthor {
+  authorId: Int!
+  avatarUrl: String
+  displayName: String
+}
+
+type SearchHighlight {
+  content: [String!]
+  title: [String!]
+}
+
+type SearchPost {
+  author: SearchAuthor!
+  category: String!
+  categoryName: String!
+  highlight: SearchHighlight
+  postId: Int!
+  publishedAt: DateTime
+  score: Float
+  slug: String!
+  thumbnailUrl: String
+  title: String!
+}
+
+type SearchResult {
+  pagination: PaginationInfo!
+  posts: [SearchPost!]!
+  query: String!
+}
